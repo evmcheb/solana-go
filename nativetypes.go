@@ -189,6 +189,9 @@ func (s Signature) Verify(pubkey PublicKey, msg []byte) bool {
 func (p Signature) String() string {
 	return base58.Encode(p[:])
 }
+func (p Signature) Short(n int) string {
+	return base58.Encode(p[:])[:n]
+}
 
 type Base58 []byte
 
