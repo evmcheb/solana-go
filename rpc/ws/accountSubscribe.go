@@ -26,6 +26,7 @@ type AccountResult struct {
 	Value struct {
 		rpc.Account
 	} `json:"value"`
+	Pubkey solana.PublicKey
 }
 
 // AccountSubscribe subscribes to an account to receive notifications
@@ -75,17 +76,25 @@ func (cl *Client) AccountSubscribeWithOpts(
 		return nil, err
 	}
 	return &AccountSubscription{
-		sub: genSub,
+		pubkey: account,
+		sub:    genSub,
 	}, nil
 }
 
 type AccountSubscription struct {
-	sub *Subscription
+	pubkey solana.PublicKey
+	sub    *Subscription
+}
+
+func (sw *AccountSubscription) GetSub() *Subscription {
+	return sw.sub
 }
 
 func (sw *AccountSubscription) Recv() (*AccountResult, error) {
 	select {
 	case d := <-sw.sub.stream:
+		res := d.(*AccountResult)
+		res.Pubkey = sw.pubkey
 		return d.(*AccountResult), nil
 	case err := <-sw.sub.err:
 		return nil, err
